@@ -1,6 +1,6 @@
 from customtkinter import *
-import algoritmi
-
+import algoritmi #importē failu ar alpha-beta un minimax algoritmu funkcijām
+#nosaka grafiskās vides krāsu gammu
 set_appearance_mode("light")
 set_default_color_theme("green")
 app = CTk()
@@ -64,31 +64,28 @@ checkbox = CTkCheckBox(slider_frame,
     checkbox_width=20,
     command=dators_sak_speli)
 checkbox.pack(pady=10)
+#sākuma ekrāna dzēšana un skaitļu virknes inicializācija
+def speles_inicializacija():
+    slider_frame.destroy()
+    pogas_frame.destroy()
+    global genereta_virkne
+    global datora_sakuma_punkti
+    global speletaja_sakuma_punkti
+    genereta_virkne = algoritmi.virknes_gen(int(slider.get()))
+    veidot_speles_skatu(genereta_virkne, datora_sakuma_punkti, speletaja_sakuma_punkti)
 
 
 #sākuma ekrāna pogu funkcionalitāte
 def minimax_izsaukums():
-    slider_frame.destroy()
-    pogas_frame.destroy()
     global izveletais_algoritms
     izveletais_algoritms = "minimax"
-    global genereta_virkne
-    global datora_sakuma_punkti
-    global speletaja_sakuma_punkti
-    genereta_virkne = algoritmi.virknes_gen(int(slider.get()))
-    veidot_speles_skatu_minimax(genereta_virkne, datora_sakuma_punkti, speletaja_sakuma_punkti)
+    speles_inicializacija()
 
 
 def alpha_beta_izsaukums():
-    slider_frame.destroy()
-    pogas_frame.destroy()
     global izveletais_algoritms
-    izveletais_algoritms = "alphabeta"
-    global genereta_virkne
-    global datora_sakuma_punkti
-    global speletaja_sakuma_punkti
-    genereta_virkne = algoritmi.virknes_gen(int(slider.get()))
-    veidot_speles_skatu_alpha_beta(genereta_virkne, datora_sakuma_punkti, speletaja_sakuma_punkti)
+    izveletais_algoritms = "alpha-beta"
+    speles_inicializacija()
     
 #pogu izveide uz ekrāna
 pogas_frame = CTkFrame(app, fg_color="transparent")
@@ -109,12 +106,14 @@ button.pack(side = LEFT,
     padx=40,
     pady=7,
     anchor="center")
+
 button = CTkButton(pogas_frame,
     text="Alpha-Beta",
     font=("Segoe UI", 28), 
     width=200,
     height=130,
     command=alpha_beta_izsaukums)
+
 button.pack(side = LEFT,
     padx=40,
     pady=7,
@@ -301,7 +300,7 @@ def speles_skats(genereta_virkne):
         font=("Segoe UI Semilight", 24))
     gajiena_pogas_title.pack(pady=10)
 
-    #pārbauda vai cipars 1 vēl ir spēles skaitļu virknē
+    #pārbauda vai cipars 1 ir spēles izveides sākuma skaitļu virknē
     if "1" in genereta_virkne:
         pogas_stavoklis = "normal"
     else:
@@ -323,7 +322,7 @@ def speles_skats(genereta_virkne):
     poga_cipars_1.pack(side = LEFT,
         padx=60)
     
-    #pārbauda vai cipars 2 vēl ir spēles skaitļu virknē
+    #pārbauda vai cipars 2 ir spēles izveides sākuma skaitļu virknē
     if "2" in genereta_virkne:
         pogas_stavoklis = "normal"
     else:
@@ -345,7 +344,7 @@ def speles_skats(genereta_virkne):
     poga_cipars_2.pack(side = LEFT,
         padx=60)
     
-    #pārbauda vai cipars 3 vēl ir spēles skaitļu virknē
+    #pārbauda vai cipars 3 ir spēles izveides sākuma skaitļu virknē
     if "3" in genereta_virkne:
         pogas_stavoklis = "normal"
     else:
@@ -407,10 +406,7 @@ def speletaja_gajiens1():
     global izveletais_algoritms
 
     if len(list(speles_stavoklis.skaitli)) != 0:
-        if izveletais_algoritms == "minimax":
-            datora_minimax_gajiens()
-        else:
-            datora_alphabeta_gajiens()
+        datora_gajiens_fun()
 
     else:
         
@@ -437,10 +433,7 @@ def speletaja_gajiens2():
     global izveletais_algoritms
 
     if len(list(speles_stavoklis.skaitli)) != 0:
-        if izveletais_algoritms == "minimax":
-            datora_minimax_gajiens()
-        else:
-            datora_alphabeta_gajiens()
+        datora_gajiens_fun()
 
     else:
         speles_iznakums(speles_stavoklis.datora_punkti, speles_stavoklis.player_punkti)
@@ -464,25 +457,27 @@ def speletaja_gajiens3():
     # pēdējo ciparu un tad lietotājam nav iespēja to paņemt savā gājienā
 
     vai_poga_pieejama()
-    global izveletais_algoritms
+    
 
     if len(list(speles_stavoklis.skaitli)) != 0:
-        if izveletais_algoritms == "minimax":
-            datora_minimax_gajiens()
-        else:
-            datora_alphabeta_gajiens()
+        datora_gajiens_fun()
 
     else:
         speles_iznakums(speles_stavoklis.datora_punkti, speles_stavoklis.player_punkti)
         
-
-def datora_minimax_gajiens():
+#funkcija, kas izpilda visas darbības datora gājiena laikā un
+#samaina grafiskajā vidē punktu mainīgos un skaitļu virkni
+def datora_gajiens_fun():
     global speles_stavoklis
     print("datora gajiens")
     print(speles_stavoklis.datora_gajiens)
 
     global datora_esosais_gajiens
-    datora_esosais_gajiens = algoritmi.best_moveM(speles_stavoklis)
+    global izveletais_algoritms
+    if izveletais_algoritms == "minimax":
+        datora_esosais_gajiens = algoritmi.best_moveM(speles_stavoklis)
+    else:
+        datora_esosais_gajiens = algoritmi.best_move(speles_stavoklis)
     print(datora_esosais_gajiens)
     global datora_gajiens
     datora_gajiens.configure(text=datora_esosais_gajiens)
@@ -499,41 +494,14 @@ def datora_minimax_gajiens():
     if len(list(speles_stavoklis.skaitli)) == 0:
         speles_iznakums(speles_stavoklis.datora_punkti, speles_stavoklis.player_punkti)
 
-    
-
-def datora_alphabeta_gajiens():
-    global speles_stavoklis
-    print("datora gajiens")
-    print(speles_stavoklis.datora_gajiens)
-
-    global datora_esosais_gajiens
-    datora_esosais_gajiens = algoritmi.best_move(speles_stavoklis)
-    print(datora_esosais_gajiens)
-    global datora_gajiens
-    datora_gajiens.configure(text=datora_esosais_gajiens)
-    
-
-    speles_stavoklis = speles_stavoklis.make_move(datora_esosais_gajiens)
-    
-
-    global skaitlu_virkne
-    skaitlu_virkne.configure(text=" ".join(str(speles_stavoklis.skaitli)))
-    datora_punkti.configure(text=str(speles_stavoklis.datora_punkti))
-    speletaja_punkti.configure(text=str(speles_stavoklis.player_punkti))
-
-    vai_poga_pieejama()
-
-    if len(list(speles_stavoklis.skaitli)) == 0:
-        speles_iznakums(speles_stavoklis.datora_punkti, speles_stavoklis.player_punkti)
-        
     
 
 
 
 #pēc algoritma izvēles izveidot spēles skatu 
-def veidot_speles_skatu_minimax(genereta_virkne, datora_punkti_value, speletaja_punkti_value):
+def veidot_speles_skatu(genereta_virkne, datora_punkti_value, speletaja_punkti_value):
    
-    print("minimax algoritms")
+   
 
     speles_skats(genereta_virkne)
 
@@ -543,7 +511,13 @@ def veidot_speles_skatu_minimax(genereta_virkne, datora_punkti_value, speletaja_
         print("datora pirmais gajiens")
         speles_stavoklis = algoritmi.AlphaBeta(genereta_virkne, datora_punkti_value, speletaja_punkti_value, True)
         global datora_esosais_gajiens
-        datora_esosais_gajiens = algoritmi.best_moveM(speles_stavoklis)
+        global izveletais_algoritms
+        if izveletais_algoritms == "minimax":
+            datora_esosais_gajiens = algoritmi.best_moveM(speles_stavoklis)
+            print("minimax")
+        else:
+            datora_esosais_gajiens = algoritmi.best_move(speles_stavoklis)
+            print("alphabeta")
         global datora_gajiens
         datora_gajiens.configure(text=datora_esosais_gajiens)
         speles_stavoklis = speles_stavoklis.make_move(datora_esosais_gajiens)
@@ -560,32 +534,6 @@ def veidot_speles_skatu_minimax(genereta_virkne, datora_punkti_value, speletaja_
     
     
 
-def veidot_speles_skatu_alpha_beta(genereta_virkne, datora_punkti_value, speletaja_punkti_value):
-    
-    print("alpha-beta algoritms")
-    
-    speles_skats(genereta_virkne)
-    
-    global speles_stavoklis
-    global vai_dators_sak_speli
-    if vai_dators_sak_speli: #ja checkbox true tad dators sāk spēli
-        print("datora pirmais gajiens")
-        speles_stavoklis = algoritmi.AlphaBeta(genereta_virkne, datora_punkti_value, speletaja_punkti_value, True)
-        global datora_esosais_gajiens
-        datora_esosais_gajiens = algoritmi.best_move(speles_stavoklis)
-        global datora_gajiens
-        datora_gajiens.configure(text=datora_esosais_gajiens)
-        speles_stavoklis = speles_stavoklis.make_move(datora_esosais_gajiens)
-        global skaitlu_virkne
-        global datora_punkti
-        global speletaja_punkti
-        skaitlu_virkne.configure(text=" ".join(str(speles_stavoklis.skaitli)))
-        datora_punkti.configure(text=str(speles_stavoklis.datora_punkti))
-        speletaja_punkti.configure(text=str(speles_stavoklis.player_punkti))
-
-    else:
-        speles_stavoklis = algoritmi.AlphaBeta(genereta_virkne, datora_punkti_value, speletaja_punkti_value, False)
-    
 
 
 
